@@ -15,8 +15,10 @@ cd .isoloom/vagrant && vagrant up
 About 7.8 GB of memory (`isoloom resources`) plus 1 GB for the controller. Lab guide: the
 [GOAD documentation](https://orange-cyberdefense.github.io/GOAD/).
 
-Status: described and validated; not yet built end to end through Isoloom (GOAD and GOAD-Light
-are).
+**Tested:** built end to end on VirtualBox (KINGSLANDING, the Windows 10 workstation and the
+controller), 0 failed tasks: the domain, the workstation's domain join, and GOAD's
+vulnerabilities. The Windows 10 box can drop WinRM briefly during a reboot; re-running
+provisioning (`vagrant provision isoloom-controller --provision-with ansible`) completes it.
 
 ## Licence
 
