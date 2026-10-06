@@ -1,0 +1,14 @@
+{
+  "title": "MINILAB",
+  "description": "A minimal Active Directory lab: a domain controller (KINGSLANDING) and a Windows 10 workstation joined to the domain, for workstation-to-domain attack paths.",
+  "question": "Pivot from the workstation to Domain Admin.",
+  "category": "NETWORK",
+  "difficulty": 2,
+  "evidence_kind": "SECRET",
+  "providers": [
+    "virtualbox",
+    "vmware_desktop",
+    "parallels",
+    "vmware_esxi"
+  ]
+}
