@@ -7,28 +7,26 @@ name: minilab
 networks:
   lab: { cidr: 192.168.56.0/24 }
 
+# Both boxes: 2 CPUs, 4 GB, WinRM set up by the box itself; GOAD's own images.
+common:
+  resources: { cpus: 2, memory_mb: 4000 }
+  vm:
+    provision: [vagrant/ConfigureRemotingForAnsible.ps1]
+
 machines:
   dc01:
     networks: { lab: 30 }
     services: [{ port: 53, name: dns }, { port: 88, name: kerberos }, { port: 389, name: ldap }, { port: 445, name: smb }]
-    resources: { cpus: 2, memory_mb: 4000 }
     vm:
       os: windows-server-2019
-      # GOAD's own box for this lab.
-      image:
-        vagrant: mayfly/windows_server2019
-      provision: [vagrant/ConfigureRemotingForAnsible.ps1]
+      image: { vagrant: mayfly/windows_server2019 }   # GOAD's own box
 
   ws01:
     networks: { lab: 31 }
     services: [{ port: 445, name: smb }]
-    resources: { cpus: 2, memory_mb: 4000 }
     vm:
       os: windows-10
-      # GOAD's own box for this lab.
-      image:
-        vagrant: mayfly/windows10
-      provision: [vagrant/ConfigureRemotingForAnsible.ps1]
+      image: { vagrant: mayfly/windows10 }   # GOAD's own box
 
 provision:
   - ansible: ansible/main.yml
@@ -37,3 +35,7 @@ provision:
       - ad/MINILAB/providers/isoloom/inventory
       - globalsettings.ini
     requirements: ansible/requirements_311.yml
+
+message: |
+  MINILAB is up: the domain controller at {{ machines.dc01.addresses.lab }}, the workstation at
+  {{ machines.ws01.addresses.lab }}.
