@@ -5,7 +5,7 @@
 
 ROOT = File.expand_path("../..", __dir__)
 # Copied into each VM: the project, without version control or generated files.
-PROJECT = Dir.children(ROOT).reject { |e| [".git", ".isoloom", ".vagrant"].include?(e) }.sort
+PROJECT = Dir.children(ROOT).reject { |e| [".git", ".vagrant"].include?(e) || e.start_with?(".isoloom") }.sort
 # ESXi (vagrant-vmware-esxi): ESXI_VIRTUAL_NETWORK lists port groups, comma-separated: the
 # management network first, then one per network, in order (lab); a missing one reuses the last.
 ESXI_NETWORKS = ENV.fetch("ESXI_VIRTUAL_NETWORK", "VM Network").split(",").map(&:strip)
@@ -20,7 +20,6 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "dc01" do |m|
     m.vm.box = "mayfly/windows_server2019"
-    m.vm.hostname = "dc01"
     m.vm.network "forwarded_port", guest: 3389, host: 3389, id: "rdp", disabled: true
     m.vm.guest = :windows
     m.vm.communicator = "winrm"
@@ -33,6 +32,7 @@ Vagrant.configure("2") do |config|
     m.vm.network "private_network", ip: "192.168.56.30", netmask: "255.255.255.0", virtualbox__intnet: "isoloom-minilab-lab", libvirt__network_name: "isoloom-minilab-lab", libvirt__dhcp_enabled: false
     m.vm.provider "virtualbox" do |v|
       v.name = "minilab · dc01"
+      v.linked_clone = true
       v.cpus = 2
       v.memory = 4000
     end
@@ -43,6 +43,7 @@ Vagrant.configure("2") do |config|
     end
     m.vm.provider "parallels" do |v|
       v.name = "minilab · dc01"
+      v.linked_clone = true
       v.cpus = 2
       v.memory = 4000
     end
@@ -76,7 +77,6 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "ws01" do |m|
     m.vm.box = "mayfly/windows10"
-    m.vm.hostname = "ws01"
     m.vm.network "forwarded_port", guest: 3389, host: 3389, id: "rdp", disabled: true
     m.vm.guest = :windows
     m.vm.communicator = "winrm"
@@ -89,6 +89,7 @@ Vagrant.configure("2") do |config|
     m.vm.network "private_network", ip: "192.168.56.31", netmask: "255.255.255.0", virtualbox__intnet: "isoloom-minilab-lab", libvirt__network_name: "isoloom-minilab-lab", libvirt__dhcp_enabled: false
     m.vm.provider "virtualbox" do |v|
       v.name = "minilab · ws01"
+      v.linked_clone = true
       v.cpus = 2
       v.memory = 4000
     end
@@ -99,6 +100,7 @@ Vagrant.configure("2") do |config|
     end
     m.vm.provider "parallels" do |v|
       v.name = "minilab · ws01"
+      v.linked_clone = true
       v.cpus = 2
       v.memory = 4000
     end
@@ -136,6 +138,7 @@ Vagrant.configure("2") do |config|
     m.vm.network "private_network", ip: "192.168.56.253", netmask: "255.255.255.0", virtualbox__intnet: "isoloom-minilab-lab", libvirt__network_name: "isoloom-minilab-lab", libvirt__dhcp_enabled: false
     m.vm.provider "virtualbox" do |v|
       v.name = "minilab · controller"
+      v.linked_clone = true
       v.cpus = 1
       v.memory = 1024
     end
@@ -146,6 +149,7 @@ Vagrant.configure("2") do |config|
     end
     m.vm.provider "parallels" do |v|
       v.name = "minilab · controller"
+      v.linked_clone = true
       v.cpus = 1
       v.memory = 1024
     end
@@ -201,7 +205,8 @@ Vagrant.configure("2") do |config|
     SH
     m.vm.provision "shell", name: "ansible", inline: <<~'SH'
       set -e
-      export PATH=/opt/ansible/bin:$PATH ANSIBLE_HOST_KEY_CHECKING=False
+      mkdir -p /tmp/isoloom-facts
+      export PATH=/opt/ansible/bin:$PATH ANSIBLE_HOST_KEY_CHECKING=False ANSIBLE_GATHERING=smart ANSIBLE_FORKS=20 ANSIBLE_PIPELINING=True ANSIBLE_CACHE_PLUGIN=jsonfile ANSIBLE_CACHE_PLUGIN_CONNECTION=/tmp/isoloom-facts ANSIBLE_CACHE_PLUGIN_TIMEOUT=7200
       cd /opt/isoloom/ansible
       ansible-galaxy install -r /opt/isoloom/ansible/requirements_311.yml
       ansible-playbook -i /etc/isoloom/inventory.ini -i /opt/isoloom/ad/MINILAB/data/inventory -i /opt/isoloom/ad/MINILAB/providers/isoloom/inventory -i /opt/isoloom/globalsettings.ini main.yml
