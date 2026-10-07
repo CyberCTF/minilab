@@ -1,5 +1,0 @@
-; GOAD's per-host variables when Isoloom runs the lab: Isoloom's own inventory gives each
-; machine its address and connection; these say which domain each machine belongs to.
-[default]
-dc01 dns_domain=dc01 dict_key=dc01
-ws01 dns_domain=dc01 dict_key=ws01
