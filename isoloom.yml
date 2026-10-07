@@ -30,11 +30,31 @@ machines:
 
 provision:
   - ansible: ansible/main.yml
-    inventory:
-      - ad/MINILAB/data/inventory
-      - ad/MINILAB/providers/isoloom/inventory
-      - globalsettings.ini
     requirements: ansible/requirements_311.yml
+    # The lab's own per-host variables (which domain each machine belongs to) and the keyboard layouts.
+    inventory: [ad/MINILAB/data/inventory]
+    # What each machine plays in the lab: the groups GOAD's playbooks target.
+    groups:
+      domain: [dc01, ws01]
+      dc: [dc01]
+      workstation: [ws01]
+      parent_dc: [dc01]
+      update: [dc01, ws01]
+    # The lab's settings, as GOAD's playbooks read them.
+    vars:
+      domain_name: MINILAB
+      admin_user: administrator
+      force_dns_server: 'no'
+      dns_server: 'x.x.x.x'
+      dns_server_forwarder: 1.1.1.1
+      enable_http_proxy: 'no'
+      ad_http_proxy: 'http://{{proxy_ip}}:{{proxy_port}}'
+      ad_https_proxy: 'http://{{proxy_ip}}:{{proxy_port}}'
+      add_route: 'no'
+      route_gateway: 192.168.56.1
+      route_network: 10.0.0.0/8
+      proxy_ip: 'x.x.x.x'
+      proxy_port: '8080'
 
 message: |
   MINILAB is up: the domain controller at {{ machines.dc01.addresses.lab }}, the workstation at
